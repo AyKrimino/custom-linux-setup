@@ -83,4 +83,209 @@ require("lazy").setup({
             vim.cmd("colorscheme gruvbox")
         end,
     },
+		{
+			"nvim-treesitter/nvim-treesitter",
+			config = function()
+				require("nvim-treesitter.configs").setup({
+					ensure_installed = "all",
+					highlight = { enable = true },
+					indent = { enable = true },
+				})
+			end,
+		},
+	{
+		"nvim-telescope/telescope.nvim",
+		config = function() 
+			require("telescope").setup({
+			})
+			vim.api.nvim_set_keymap('n', '<C-S-p>', '<Cmd>Telescope find_files<CR>', {noremap = true, silent = true })
+		end
+	},
+	{
+		"nvim-lualine/lualine.nvim",
+		config = function()
+			require("lualine").setup()
+		end,
+	},
+	{
+		"williamboman/mason.nvim",
+		config = function()
+			require("mason").setup()
+		end,
+	},
+	{
+		"williamboman/mason-lspconfig.nvim",
+		config = function()
+			require("mason-lspconfig").setup({
+				ensure_installed = { 
+					"lua_ls", 
+					"pyright", 
+					"ts_ls", 
+					"bashls",
+					"cssls",
+					"dockerls",
+					"gopls",
+					"html",
+					"sqls",
+					"intelephense", -- PHP
+					"jdtls", -- JAVA
+					"solargraph", -- Ruby
+					"ocamllsp", 
+					"clangd",
+					"rust_analyzer",
+					"jsonls",
+					"tailwindcss",
+				}, 
+			})
+		end,
+	},
+	{
+		"neovim/nvim-lspconfig",
+		config = function()
+			local lspconfig = require("lspconfig")
+			local capabilities = vim.lsp.protocol.make_client_capabilities()
+			capabilities.textDocument.completion.completionItem.snippetSupport = true
+
+			-- HTML LSP configuration
+			lspconfig.html.setup({
+				cmd = { "vscode-html-language-server", "--stdio" },
+				filetypes = { "html", "templ" },
+				init_options = {
+					configurationSection = { "html", "css", "javascript" },
+					embeddedLanguages = {
+						css = true,
+						javascript = true,
+					},
+					provideFormatter = true,
+				},
+				capabilities = capabilities, -- Pass the capabilities here
+				settings = {},
+			})
+
+			-- Docker LSP
+			lspconfig.dockerls.setup({})
+
+			-- CSS LSP
+			lspconfig.cssls.setup({
+				settings = {
+					css = {
+						validate = true
+					},
+					less = {
+						validate = true
+					},
+					scss = {
+						validate = true
+					}
+				}
+			})
+
+			-- Bash LSP
+			lspconfig.bashls.setup({})
+
+			-- Lua LSP
+		  lspconfig.lua_ls.setup({
+				settings = {
+					Lua = {
+						runtime = {
+							version = "LuaJIT",
+						},
+						diagnostics = {
+							globals = { "vim" },
+						},
+						workspace = {
+							library = vim.api.nvim_get_runtime_file("", true),
+						},
+						telemetry = {
+							enable = false,
+						},
+					}
+				}
+			})
+
+			-- Python LSP
+			lspconfig.pyright.setup({})
+
+			-- JavaScript/TypeScript LSP
+			lspconfig.ts_ls.setup({})
+
+			-- SQL LSP
+			lspconfig.sqls.setup({})
+
+      -- PHP LSP (Intelephense for PHP)
+      lspconfig.intelephense.setup({
+      })
+
+      -- Java LSP (jdtls for Java)
+      lspconfig.jdtls.setup({
+      })
+
+      -- Ruby LSP (Solargraph for Ruby)
+      lspconfig.solargraph.setup({
+      })
+
+      -- OCaml LSP (for OCaml)
+      lspconfig.ocamllsp.setup({
+      })
+
+      -- C/C++ LSP (clangd for C and C++)
+      lspconfig.clangd.setup({
+      })
+
+      -- Rust LSP (rust_analyzer for Rust)
+      lspconfig.rust_analyzer.setup({
+      })
+
+      -- JSON LSP (for JSON)
+      lspconfig.jsonls.setup({
+      })
+
+      -- TailwindCSS LSP (for Tailwind CSS)
+      lspconfig.tailwindcss.setup({
+      })
+
+			-- Keybindings for LSP
+			vim.api.nvim_create_autocmd("LspAttach", {
+				callback = function(args)
+					local client = vim.lsp.get_client_by_id(args.data.client_id)
+					if client then
+						-- Keybindings
+						vim.keymap.set("n", "gd", vim.lsp.buf.definition, { buffer = args.buf })
+						vim.keymap.set("n", "K", vim.lsp.buf.hover, { buffer = args.buf })
+						vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, { buffer = args.buf })
+						vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { buffer = args.buf })
+						vim.keymap.set("n", "gr", vim.lsp.buf.references, { buffer = args.buf })
+					end
+				end,
+			})
+		end,
+	},
+	{
+		"hrsh7th/nvim-cmp",
+		dependencies = {
+			"hrsh7th/cmp-nvim-lsp", -- LSP source
+			"hrsh7th/cmp-buffer",   -- Buffer source
+			"hrsh7th/cmp-path",     -- Path source
+			"L3MON4D3/LuaSnip",     -- Snippet engine
+		},
+		config = function()
+			local cmp = require("cmp")
+			cmp.setup({
+				snippet = {
+					expand = function(args)
+						require("luasnip").lsp_expand(args.body)
+					end,
+				},
+				mapping = {
+					["<C-Space>"] = cmp.mapping.complete(),
+					["<CR>"] = cmp.mapping.confirm({ select = true }),
+				},
+				sources = {
+					{ name = "nvim_lsp" },
+					{ name = "buffer" },
+					{ name = "path" },
+				},
+			})
+		end,
+	},
 })
