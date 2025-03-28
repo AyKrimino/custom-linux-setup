@@ -289,3 +289,47 @@ require("lazy").setup({
 		end,
 	},
 })
+
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = "go",
+	callback = function()
+		vim.opt_local.tabstop = 4      -- Width of a tab character
+		vim.opt_local.shiftwidth = 4   -- Number of spaces for indentation
+		vim.opt_local.expandtab = false -- Use tabs instead of spaces
+	end,
+})
+
+vim.api.nvim_create_autocmd("BufWritePre", {
+	pattern = "*.go",
+	callback = function()
+		vim.lsp.buf.format({ async = false }) -- Format on save
+	end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = "php",
+	callback = function()
+		vim.opt_local.tabstop = 4      -- Width of a tab character
+		vim.opt_local.shiftwidth = 4   -- Number of spaces for indentation
+		vim.opt_local.expandtab = true -- Use spaces instead of tabs
+	end,
+
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = "html",
+	callback = function()
+		vim.opt_local.tabstop = 2      -- Width of a tab character
+		vim.opt_local.shiftwidth = 2   -- Number of spaces for indentation
+		vim.opt_local.expandtab = true -- Use spaces instead of tabs
+	end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = "css",
+	callback = function()
+		vim.opt_local.tabstop = 4
+		vim.opt_local.shiftwidth = 4
+		vim.opt_local.expandtab = true
+	end,
+})
