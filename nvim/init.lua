@@ -162,6 +162,9 @@ require("lazy").setup({
 				settings = {},
 			})
 
+			-- Go LSP
+			lspconfig.gopls.setup({})
+
 			-- Docker LSP
 			lspconfig.dockerls.setup({})
 
