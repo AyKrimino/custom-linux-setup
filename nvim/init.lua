@@ -41,6 +41,14 @@ vim.cmd("syntax on") -- enables syntax highlighting.
 vim.cmd("filetype plugin on") -- enables filetype detection and plugin loading
 vim.cmd("filetype indent on") -- enables filetype-specific indentation
 
+-- Vertical movement
+vim.keymap.set('n', '<C-d>', '<C-d>zz', { silent = true })
+vim.keymap.set('n', '<C-u>', '<C-u>zz', { silent = true })
+
+-- Search movement
+vim.keymap.set('n', 'n', 'nzzzv', { silent = true })
+vim.keymap.set('n', 'N', 'Nzzzv', { silent = true })
+
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
   vim.fn.system({
