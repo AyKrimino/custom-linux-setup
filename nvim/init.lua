@@ -143,6 +143,7 @@ require("lazy").setup({
 					"rust_analyzer",
 					"jsonls",
 					"tailwindcss",
+					"emmet_ls",
 				}, 
 			})
 		end,
@@ -153,7 +154,26 @@ require("lazy").setup({
 			local lspconfig = require("lspconfig")
 			local capabilities = vim.lsp.protocol.make_client_capabilities()
 			capabilities.textDocument.completion.completionItem.snippetSupport = true
-
+				
+			-- Emmet LSP config
+			lspconfig.emmet_ls.setup({
+				filetypes = { 
+					"html", 
+					"css", 
+					"javascript", 
+					"javascriptreact", 
+					"typescriptreact", 
+					"php",
+				},
+				init_options = {
+					html = {
+						options = {
+							["bem.enabled"] = true,
+						},
+					},
+				},
+			})
+				
 			-- HTML LSP configuration
 			lspconfig.html.setup({
 				cmd = { "vscode-html-language-server", "--stdio" },
