@@ -11,16 +11,20 @@
 
 set $mod Mod1
 
-# exec --no-startup-id picom
-exec_always --no-startup-id pgrep -x polybar || polybar example
+exec --no-startup-id picom
+# exec --no-startup-id polybar example --config=$HOME/.config/polybar/config.ini
 exec_always feh --bg-scale ~/Downloads/car-with-full-moon-background.jpg
 bindsym $mod+space exec rofi -show combi
 exec --no-startup-id export GTK_THEME=Arc-Dark
 exec --no-startup-id export GTK2_RC_FILES=/usr/share/themes/Arc-Dark/gtk-2.0/gtkrc
 
+# touchpad configs
+exec --no-startup-id xinput set-prop "PNP0C50:00 06CB:7E7E Touchpad" "libinput Tapping Enabled" 1
+exec --no-startup-id xinput set-prop "PNP0C50:00 06CB:7E7E Touchpad" "libinput Natural Scrolling Enabled" 1
+
 # Font for window titles. Will also be used by the bar unless a different font
 # is used in the bar {} block below.
-font pango:Meslo LGM Nerd Font 14
+font pango:FiraCode Nerd Font 10
 
 # This font is widely installed, provides lots of unicode glyphs, right-to-left
 # text rendering and scalability on retina/hidpi displays (thanks to pango).
@@ -66,7 +70,7 @@ tiling_drag modifier titlebar
 bindsym $mod+Return exec alacritty 
 
 # kill focused window
-bindsym $mod+Shift+a kill
+bindsym $mod+q kill
 
 # start dmenu (a program launcher)
 bindsym $mod+d exec --no-startup-id dmenu_run
@@ -121,7 +125,7 @@ bindsym $mod+Shift+space floating toggle
 # bindsym $mod+space focus mode_toggle
 
 # focus the parent container
-bindsym $mod+q focus parent
+#bindsym $mod+q focus parent
 
 # focus the child container
 #bindsym $mod+d focus child
@@ -168,7 +172,7 @@ bindsym $mod+Shift+c reload
 # restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
 bindsym $mod+Shift+r restart
 # exit i3 (logs you out of your X session)
-bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -B 'Yes, exit i3' 'i3-msg exit'"
+# bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -B 'Yes, exit i3' 'i3-msg exit'"
 
 # resize window (you can also use the mouse for that)
 mode "resize" {
@@ -203,11 +207,22 @@ bindsym Print exec --no-startup-id flameshot gui
 # Fullscreen screenshot
 bindsym Mod1+Print exec --no-startup-id flameshot full -p ~/Pictures
 
+# System actions
+mode "System: (l)ogout, (s)uspend, (r)eboot, (p)oweroff" {
+    bindsym l exec --no-startup-id i3-msg exit
+    bindsym s exec --no-startup-id systemctl suspend
+    bindsym r exec --no-startup-id systemctl reboot
+    bindsym p exec --no-startup-id systemctl poweroff
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+bindsym $mod+Shift+e mode "System: (l)ogout, (s)uspend, (r)eboot, (p)oweroff"
+
 # Start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)
-#bar {
-#        status_command i3status
-#}
+bar {
+	status_command i3status
+}
 
 set $rosewater #f5e0dc
 set $flamingo  #f2cdcd
