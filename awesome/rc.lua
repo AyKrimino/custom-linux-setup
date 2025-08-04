@@ -52,7 +52,7 @@ end
 beautiful.init(gears.filesystem.get_themes_dir() .. "default/theme.lua")
 
 -- This is used later as the default terminal and editor to run.
-terminal = "alacritty"
+terminal = "ghostty"
 editor = os.getenv("EDITOR") or "vim"
 editor_cmd = terminal .. " -e " .. editor
 
@@ -510,6 +510,10 @@ awful.rules.rules = {
 		rule = { class = "Gimp" },
 		properties = { floating = false, maximized = false } 
 	},
+	{
+		rule = { class = "ghostty" },
+		properties = { floating = false, maximized = false, titlebars_enabled = false } 
+	},
 	{ rule = { },
 		properties = { border_width = beautiful.border_width,
 			border_color = beautiful.border_normal,
@@ -575,8 +579,10 @@ client.connect_signal("manage", function (c)
 		and not c.size_hints.user_position
 		and not c.size_hints.program_position then
 		-- Prevent clients from being unreachable after screen count changes.
+		awful.placement.no_overlap(c)
 		awful.placement.no_offscreen(c)
 	end
+	c.titlebars_enabled = false
 end)
 
 -- Add a titlebar if titlebars_enabled is set to true in the rules.
@@ -635,7 +641,7 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 
 -- Autostart applications
 awful.spawn.with_shell("picom --experimental-backends --config ~/.config/picom/picom.conf -b")
-awful.spawn.with_shell("feh --bg-scale ~/Pictures/backgrounds/a_cartoon_of_a_machine.jpg")
+awful.spawn.with_shell("feh --bg-scale ~/Pictures/backgrounds/a_pixel_art_of_a_building.png")
 awful.spawn.with_shell("pkill polybar || true && polybar -c ~/.config/polybar/config.ini awesome")
 awful.spawn.with_shell([[
   xinput set-prop "PNP0C50:00 06CB:7E7E Touchpad" "libinput Tapping Enabled" 1
