@@ -27,6 +27,9 @@ vim.bo.tabstop = 2             -- Number of spaces a tab character represents
 -- Block cursor in all modes (including insert mode)
 vim.opt.guicursor = "n-v-c:block,i-ci-ve:block,r-cr:hor20,o:hor50,a:blinkwait700-blinkoff400-blinkon250-Cursor/lCursor,sm:block-blinkwait175-blinkoff150-blinkon175"
 
+-- Enable ligatures
+vim.opt.conceallevel = 2
+
 -- Clipboard integration (system clipboard for copy-paste)
 vim.opt.clipboard = "unnamedplus" -- Use the system clipboard for yanking and pasting
 vim.opt.termguicolors = true   -- Enable true color support (better colors in the terminal)
@@ -49,58 +52,74 @@ vim.keymap.set('n', '<C-u>', '<C-u>zz', { silent = true })
 vim.keymap.set('n', 'n', 'nzzzv', { silent = true })
 vim.keymap.set('n', 'N', 'Nzzzv', { silent = true })
 
+-- leader 
+vim.g.mapleader = " "
+
+-- LSP Diagnostics configuration and keybindings
+vim.diagnostic.config({
+	virtual_text = true,        -- Show diagnostics as virtual text
+	signs = true,              -- Show diagnostic signs in the gutter
+	underline = true,          -- Underline diagnostic issues
+	update_in_insert = false,  -- Don't update diagnostics in insert mode
+	severity_sort = true,      -- Sort diagnostics by severity
+})
+
+vim.keymap.set('n', '<S-h>', vim.diagnostic.open_float, { desc = 'Show diagnostic in floating window' })
+vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic' })
+vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic' })
+
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
-  vim.fn.system({
-    "git",
-    "clone",
-    "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git",
-    "--branch=stable", -- latest stable release
-    lazypath,
-  })
+	vim.fn.system({
+		"git",
+		"clone",
+		"--filter=blob:none",
+		"https://github.com/folke/lazy.nvim.git",
+		"--branch=stable", -- latest stable release
+		lazypath,
+	})
 end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
-    {
-        "ellisonleao/gruvbox.nvim",
-        config = function()
-            require("gruvbox").setup({
-                undercurl = true,
-                underline = true,
-                bold = true,
-                italic = {
-                    strings = true,
-                    comments = true,
-                    operators = false,
-                    folds = true,
-                },
-                strikethrough = true,
-                invert_selection = false,
-                invert_signs = false,
-                invert_tabline = false,
-                invert_intend_guides = false,
-                inverse = true, -- invert background for search, diffs, statuslines, etc.
-                contrast = "dark", -- can be "hard", "soft", or ""
-                palette_overrides = {},
-                overrides = {},
-                dim_inactive = false,
-                transparent_mode = false,
-            })
-            vim.cmd("colorscheme gruvbox")
-        end,
-    },
-		{
-			"nvim-treesitter/nvim-treesitter",
-			config = function()
-				require("nvim-treesitter.configs").setup({
-					ensure_installed = "all",
-					highlight = { enable = true },
-					indent = { enable = true },
-				})
-			end,
-		},
+	{
+		"ellisonleao/gruvbox.nvim",
+		config = function()
+			require("gruvbox").setup({
+				undercurl = true,
+				underline = true,
+				bold = true,
+				italic = {
+					strings = true,
+					comments = true,
+					operators = false,
+					folds = true,
+				},
+				strikethrough = true,
+				invert_selection = false,
+				invert_signs = false,
+				invert_tabline = false,
+				invert_intend_guides = false,
+				inverse = true, -- invert background for search, diffs, statuslines, etc.
+				contrast = "dark", -- can be "hard", "soft", or ""
+				palette_overrides = {},
+				overrides = {},
+				dim_inactive = false,
+				transparent_mode = false,
+			})
+			vim.cmd("colorscheme gruvbox")
+		end,
+	},
+	{
+		"nvim-treesitter/nvim-treesitter",
+		config = function()
+			require("nvim-treesitter.configs").setup({
+				ensure_installed = "all",
+				highlight = { enable = true },
+				indent = { enable = true },
+			})
+		end,
+	},
 	{
 		"nvim-telescope/telescope.nvim",
 		config = function() 
@@ -122,10 +141,19 @@ require("lazy").setup({
 		end,
 	},
 	{
+		"mfussenegger/nvim-jdtls",
+		ft = { "java" },
+	},
+	{
+		"folke/neodev.nvim",
+		opts = {},       -- leave empty to use defaults
+	},
+	{
 		"williamboman/mason-lspconfig.nvim",
 		config = function()
 			require("mason-lspconfig").setup({
 				ensure_installed = { 
+					"eslint",
 					"lua_ls", 
 					"pyright", 
 					"ts_ls", 
@@ -151,18 +179,19 @@ require("lazy").setup({
 	{
 		"neovim/nvim-lspconfig",
 		config = function()
+			require("neodev").setup({})
 			local lspconfig = require("lspconfig")
 			local capabilities = vim.lsp.protocol.make_client_capabilities()
 			capabilities.textDocument.completion.completionItem.snippetSupport = true
-				
+
 			-- Emmet LSP config
 			lspconfig.emmet_ls.setup({
 				filetypes = { 
 					"html", 
 					"css", 
 					"javascript", 
-					"javascriptreact", 
-					"typescriptreact", 
+					"javascriptreact",
+					"typescriptreact",
 					"php",
 				},
 				init_options = {
@@ -173,7 +202,7 @@ require("lazy").setup({
 					},
 				},
 			})
-				
+
 			-- HTML LSP configuration
 			lspconfig.html.setup({
 				cmd = { "vscode-html-language-server", "--stdio" },
@@ -215,16 +244,24 @@ require("lazy").setup({
 			lspconfig.bashls.setup({})
 
 			-- Lua LSP
-		  lspconfig.lua_ls.setup({
+			lspconfig.lua_ls.setup({
+				root_dir = function(fname)
+					local root = require("lspconfig").util.root_pattern(".git", ".luarc.json", "lua")(fname)
+					if root then
+						return root
+					end
+					return require("lspconfig").util.path.dirname(fname)
+				end,
 				settings = {
 					Lua = {
 						runtime = {
 							version = "LuaJIT",
 						},
 						diagnostics = {
-							globals = { "vim" },
+							globals = { "state" },
 						},
-						workspace = {
+						workspace = { 
+							checkThirdParty = false,
 							library = vim.api.nvim_get_runtime_file("", true),
 						},
 						telemetry = {
@@ -238,42 +275,53 @@ require("lazy").setup({
 			lspconfig.pyright.setup({})
 
 			-- JavaScript/TypeScript LSP
-			lspconfig.ts_ls.setup({})
+			lspconfig.ts_ls.setup({ capabilities = capabilities })
+			lspconfig.eslint.setup({})
 
 			-- SQL LSP
 			lspconfig.sqls.setup({})
 
-      -- PHP LSP (Intelephense for PHP)
-      lspconfig.intelephense.setup({
-      })
+			-- PHP LSP (Intelephense for PHP)
+			lspconfig.intelephense.setup({
+			})
 
-      -- Java LSP (jdtls for Java)
-      lspconfig.jdtls.setup({
-      })
+			-- Java LSP (jdtls for Java)
+			lspconfig.jdtls.setup({
+				cmd = { "jdtls" },
+				root_dir = require("lspconfig").util.root_pattern("pom.xml", "build.gradle", ".git")(vim.fn.getcwd()),
+				capabilities = capabilities,
+				on_attach = function(client, bufnr)
+					-- standard LSP keymaps
+					vim.keymap.set("n", "<leader>oi", ":lua require'jdtls'.organize_imports()<CR>", { buffer = bufnr })
+					vim.keymap.set("n", "<leader>ev", ":lua require'jdtls'.extract_variable()<CR>", { buffer = bufnr })
+					vim.keymap.set("n", "<leader>ec", ":lua require'jdtls'.extract_constant()<CR>", { buffer = bufnr })
+					vim.keymap.set("n", "<leader>em", ":lua require'jdtls'.extract_method()<CR>", { buffer = bufnr })
+				end,
+			})
 
-      -- Ruby LSP (Solargraph for Ruby)
-      lspconfig.solargraph.setup({
-      })
+			-- Ruby LSP (Solargraph for Ruby)
+			lspconfig.solargraph.setup({
+			})
 
-      -- OCaml LSP (for OCaml)
-      lspconfig.ocamllsp.setup({
-      })
+			-- OCaml LSP (for OCaml)
+			lspconfig.ocamllsp.setup({
+			})
 
-      -- C/C++ LSP (clangd for C and C++)
-      lspconfig.clangd.setup({
-      })
+			-- C/C++ LSP (clangd for C and C++)
+			lspconfig.clangd.setup({
+			})
 
-      -- Rust LSP (rust_analyzer for Rust)
-      lspconfig.rust_analyzer.setup({
-      })
+			-- Rust LSP (rust_analyzer for Rust)
+			lspconfig.rust_analyzer.setup({
+			})
 
-      -- JSON LSP (for JSON)
-      lspconfig.jsonls.setup({
-      })
+			-- JSON LSP (for JSON)
+			lspconfig.jsonls.setup({
+			})
 
-      -- TailwindCSS LSP (for Tailwind CSS)
-      lspconfig.tailwindcss.setup({
-      })
+			-- TailwindCSS LSP (for Tailwind CSS)
+			lspconfig.tailwindcss.setup({
+			})
 
 			-- Keybindings for LSP
 			vim.api.nvim_create_autocmd("LspAttach", {
@@ -319,6 +367,26 @@ require("lazy").setup({
 			})
 		end,
 	},
+	{
+		"ThePrimeagen/vim-be-good",
+		cmd = "VimBeGood",
+	},
+	{
+		"machakann/vim-highlightedyank",
+		event = "VeryLazy",
+		config = function()
+			vim.g.highlightedyank_highlight_duration = 50  -- in milliseconds
+		end
+	},
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = "lua",
+	callback = function()
+		vim.opt_local.tabstop = 2      -- Width of a tab character
+		vim.opt_local.shiftwidth = 2   -- Number of spaces for indentation
+		vim.opt_local.expandtab = false -- Use tabs instead of spaces
+	end,
 })
 
 vim.api.nvim_create_autocmd("FileType", {
@@ -327,6 +395,7 @@ vim.api.nvim_create_autocmd("FileType", {
 		vim.opt_local.tabstop = 4      -- Width of a tab character
 		vim.opt_local.shiftwidth = 4   -- Number of spaces for indentation
 		vim.opt_local.expandtab = false -- Use tabs instead of spaces
+		vim.keymap.set("i", "<C-e>", "if err != nil {\n\treturn err\n}", { buffer = true, silent = true })
 	end,
 })
 
@@ -364,3 +433,12 @@ vim.api.nvim_create_autocmd("FileType", {
 		vim.opt_local.expandtab = true
 	end,
 })
+
+vim.api.nvim_create_autocmd("BufWritePre", {
+	pattern = "*.java",
+	callback = function()
+		vim.lsp.buf.format({ async = false })
+		vim.lsp.buf.code_action({ context = { only = { "source.organizeImports" } }, apply = true })
+	end,
+})
+
