@@ -358,6 +358,8 @@ require("lazy").setup({
 				mapping = {
 					["<C-Space>"] = cmp.mapping.complete(),
 					["<CR>"] = cmp.mapping.confirm({ select = true }),
+					['<Down>'] = cmp.mapping.select_next_item(),
+					['<Up>'] = cmp.mapping.select_prev_item(),
 				},
 				sources = {
 					{ name = "nvim_lsp" },
@@ -442,3 +444,34 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 	end,
 })
 
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "javascript", "typescript", "javascriptreact", "typescriptreact" },
+  callback = function()
+    vim.opt_local.tabstop = 2
+    vim.opt_local.shiftwidth = 2
+    vim.opt_local.expandtab = true
+    vim.opt_local.smarttab = true
+    
+    -- Enable auto-formatting on save
+    vim.api.nvim_create_autocmd("BufWritePre", {
+      pattern = { "*.js", "*.ts", "*.jsx", "*.tsx" },
+      callback = function()
+        vim.lsp.buf.format({ async = false })
+      end,
+      group = vim.api.nvim_create_augroup("NextNestFormat", { clear = true })
+    })
+    
+    vim.keymap.set("n", "<leader>el", "<cmd>lua vim.diagnostic.open_float({ source = 'eslint' })<cr>", { desc = "Open ESLint diagnostics" })
+  end,
+  group = vim.api.nvim_create_augroup("NextNestIndent", { clear = true })
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = { "json", "jsonc" },
+	callback = function()
+    vim.opt_local.tabstop = 2
+    vim.opt_local.shiftwidth = 2
+    vim.opt_local.expandtab = true
+  end,
+  group = vim.api.nvim_create_augroup("NestConfigIndent", { clear = true })
+})
